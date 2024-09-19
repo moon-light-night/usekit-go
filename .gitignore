@@ -4,7 +4,7 @@ node_modules
 logs
 *.log
 .DS_Store
-.idea*
+.idea
 .env
 .env.*
 !.env.example
