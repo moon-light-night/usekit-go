@@ -1,8 +1,8 @@
-package main
+package tips
 
 import "fmt"
 
-func main() {
+func tips() {
 	// defer позволяет выполнить функцию в конце выполнения программы
 	// самый первый defer выполнится самым последним
 	defer finish()
