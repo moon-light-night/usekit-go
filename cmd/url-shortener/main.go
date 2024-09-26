@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"usekit-go/internal/config"
+	"usekit-go/internal/http-server/handlers/url/redirect"
 	"usekit-go/internal/http-server/handlers/url/save"
 	"usekit-go/internal/lib/logger/sl"
 	"usekit-go/internal/storage/sqlite"
@@ -74,16 +75,34 @@ func main() {
 	// mv for comfortable using url addresses
 	router.Use(middleware.URLFormat)
 
-	router.Post("/url", save.New(logger, storage))
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("/url-shortener", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+
+		r.Post("/", save.New(logger, storage))
+		r.Get("/{alias}", redirect.New(logger, storage))
+		// TODO: add delete url
+	})
+	//router.Post("/url", save.New(logger, storage))
+	//router.Get("/{alias}", redirect.New(logger, storage))
 
 	logger.Info("starting server", slog.String("address", cfg.Address))
 
+	// TODO: run server
 	server := &http.Server{
-		Addr:    cfg.Address,
-		Handler: router,
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
 	}
 
-	// TODO: run server
+	if err := server.ListenAndServe(); err != nil {
+		logger.Error("failed to start server", sl.Err(err))
+	}
+
+	logger.Info("shutting down server")
 }
 
 func setLogger(env string) *slog.Logger {
