@@ -84,15 +84,15 @@ func (s *Storage) GetUrl(alias string) (string, error) {
 	return resUrl, nil
 }
 
-func (s *Storage) DeleteUrl(id string) (string, error) {
+func (s *Storage) DeleteUrl(alias string) (string, error) {
 	const op = "storage.sqlite.DeleteUrl"
 
-	stmt, err := s.db.Prepare(`DELETE FROM url WHERE id = ?`)
+	stmt, err := s.db.Prepare(`DELETE FROM url WHERE alias = ?`)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	res, err := stmt.Exec(id)
+	res, err := stmt.Exec(alias)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -102,5 +102,5 @@ func (s *Storage) DeleteUrl(id string) (string, error) {
 	}
 	slog.Info("rows affected: ", slog.Int64("rowsAffected", rowsAffected))
 
-	return id, nil
+	return alias, nil
 }

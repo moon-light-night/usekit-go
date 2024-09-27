@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"usekit-go/internal/config"
+	deleteClient "usekit-go/internal/http-server/handlers/url/delete"
 	"usekit-go/internal/http-server/handlers/url/redirect"
 	"usekit-go/internal/http-server/handlers/url/save"
 	"usekit-go/internal/lib/logger/sl"
@@ -81,11 +82,9 @@ func main() {
 		}))
 
 		r.Post("/", save.New(logger, storage))
-		r.Get("/{alias}", redirect.New(logger, storage))
-		// TODO: add delete url
+		r.Delete("/{alias}", deleteClient.New(logger, storage))
 	})
-	//router.Post("/url", save.New(logger, storage))
-	//router.Get("/{alias}", redirect.New(logger, storage))
+	router.Get("/{alias}", redirect.New(logger, storage))
 
 	logger.Info("starting server", slog.String("address", cfg.Address))
 

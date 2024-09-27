@@ -1,4 +1,4 @@
-package redirect
+package delete
 
 import (
 	"errors"
@@ -12,15 +12,20 @@ import (
 	"usekit-go/internal/storage"
 )
 
-type IRedirect interface {
-	GetUrl(alias string) (string, error)
+type IDelete interface {
+	DeleteUrl(alias string) (string, error)
+}
+
+type Response struct {
+	resp.Response
+	Alias string `json:"alias"`
 }
 
 //go:generate go run github.com/vektra/mockery/v2@v2.46.0 --name=IRedirect
 
-func New(log *slog.Logger, urlGetter IRedirect) http.HandlerFunc {
+func New(log *slog.Logger, deleteUrlGetter IDelete) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.redirect"
+		const op = "handlers.url.delete"
 
 		// mark next logs by request id
 		log = log.With(
@@ -36,8 +41,8 @@ func New(log *slog.Logger, urlGetter IRedirect) http.HandlerFunc {
 		}
 		log.Info("alias received")
 
-		// execute func GetUrl from sqlite storage
-		resUrl, err := urlGetter.GetUrl(alias)
+		// execute func DeleteUrl from sqlite storage
+		resAlias, err := deleteUrlGetter.DeleteUrl(alias)
 		if errors.Is(err, storage.ErrUrlNotFound) {
 			log.Error("Url not found", sl.Err(err))
 			render.JSON(w, r, resp.Error("Url not found"))
@@ -45,13 +50,19 @@ func New(log *slog.Logger, urlGetter IRedirect) http.HandlerFunc {
 		}
 
 		if err != nil {
-			log.Error("Failed to get url by alias", sl.Err(err))
+			log.Error("Failed to delete url by alias", sl.Err(err))
 			render.JSON(w, r, resp.Error("internal error"))
 			return
 		}
-		log.Info("got url", slog.String("url", resUrl))
+		log.Info("url deleted", slog.String("alias", resAlias))
 
-		// redirect to found url
-		http.Redirect(w, r, resUrl, http.StatusFound)
+		responseOk(w, r, resAlias)
 	}
+}
+
+func responseOk(w http.ResponseWriter, r *http.Request, alias string) {
+	render.JSON(w, r, Response{
+		Response: resp.OK(),
+		Alias:       alias,
+	})
 }
