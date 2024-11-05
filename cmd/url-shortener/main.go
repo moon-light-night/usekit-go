@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
 	"os"
+	authgrpc "usekit-go/internal/clients/auth/grpc"
 	"usekit-go/internal/config"
 	deleteClient "usekit-go/internal/http-server/handlers/url/delete"
 	"usekit-go/internal/http-server/handlers/url/redirect"
@@ -31,6 +33,20 @@ func main() {
 
 	logger.Info("Starting URL shortener", slog.String("env", cfg.Env))
 	logger.Debug("Debug messages are enabled")
+
+	authClient, err := authgrpc.New(
+		context.Background(),
+		logger,
+		cfg.Clients.AUTH.Address,
+		cfg.Clients.AUTH.Timeout,
+		cfg.Clients.AUTH.RetriesCount,
+	)
+	if err != nil {
+		logger.Error("failed to init auth client", sl.Err(err))
+		os.Exit(1)
+	}
+
+	authClient.IsAdmin(context.Background(), 2)
 
 	// TODO: init storage: sqlite
 	storage, err := sqlite.New(cfg.StoragePath)
