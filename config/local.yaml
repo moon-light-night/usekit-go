@@ -6,4 +6,3 @@ http_server:
   idle_timeout: 60s
   user: "user"
   password: "password"
-  app_secret: "test_secret"

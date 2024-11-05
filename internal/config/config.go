@@ -12,7 +12,6 @@ type Config struct {
 	StoragePath string `yaml:"storage_path" env-required:"true"`
 	HTTPServer  `yaml:"http_server"`
 	Clients     ClientsConfig `yaml:"clients"`
-	AppSecret   string        `yaml:"app_secret" env-required:"true"`
 }
 type HTTPServer struct {
 	Address     string        `yaml:"address" env-default:"localhost:8080"`
@@ -26,7 +25,7 @@ type Client struct {
 	Address      string        `yaml:"address"`
 	Timeout      time.Duration `yaml:"timeout"`
 	RetriesCount int           `yaml:"retriesCount"`
-	//Insecure     bool          `yaml:"insecure"`
+	Insecure     bool          `yaml:"insecure"`
 }
 
 type ClientsConfig struct {

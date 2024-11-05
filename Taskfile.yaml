@@ -1,0 +1,9 @@
+version: "3"
+
+tasks:
+  serve:
+    aliases:
+      - serve
+    desc: "Run server"
+    cmds:
+      - CONFIG_PATH=./config/local.yaml go run ./cmd/url-shortener

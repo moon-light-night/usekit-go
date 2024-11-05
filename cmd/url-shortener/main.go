@@ -37,16 +37,23 @@ func main() {
 	authClient, err := authgrpc.New(
 		context.Background(),
 		logger,
-		cfg.Clients.AUTH.Address,
-		cfg.Clients.AUTH.Timeout,
-		cfg.Clients.AUTH.RetriesCount,
+		//cfg.Clients.AUTH.Address,
+		"localhost:8082",
+		//cfg.Clients.AUTH.Timeout,
+		4,
+		//cfg.Clients.AUTH.RetriesCount,
+		5,
 	)
 	if err != nil {
 		logger.Error("failed to init auth client", sl.Err(err))
 		os.Exit(1)
 	}
 
-	authClient.IsAdmin(context.Background(), 2)
+	resp, err := authClient.IsAdmin(context.Background(), 2)
+	if err != nil {
+		logger.Error("failed to check admin", sl.Err(err))
+	}
+	logger.Info("resp", resp)
 
 	// TODO: init storage: sqlite
 	storage, err := sqlite.New(cfg.StoragePath)
